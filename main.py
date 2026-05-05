@@ -350,6 +350,21 @@ class HospitalManagementSystem:
         except Exception as e:
             print(f"\n  Error saving CSV: {e}")
 
+    def view_csv(self):
+        filename = "hospital_patients.csv"
+        try:
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+            if len(lines) <= 1:
+                print("\n  The CSV file is empty (no patients saved yet).")
+                return
+            print(f"\n  --- Contents of {filename} ---")
+            for line in lines:
+                print(" ", line.strip())
+            print(f"  --- {len(lines) - 1} patient(s) in file ---")
+        except FileNotFoundError:
+            print(f"\n  '{filename}' not found. Use Save to CSV first.")
+
 # --------------------------
 # Main Menu
 # --------------------------
@@ -366,7 +381,8 @@ def main():
         '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
         '9':  ('Load from CSV',          system.load_from_csv),
         '10': ('Save to CSV',            system.save_to_csv),
-        '11': ('Exit',                   None),
+        '11': ('View CSV File',          system.view_csv),
+        '12': ('Exit',                   None),
     }
 
     while True:
@@ -376,7 +392,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '11':
+        if choice == '12':
             print("Goodbye!")
             break
         elif choice in menu:
