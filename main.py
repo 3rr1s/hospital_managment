@@ -320,10 +320,10 @@ class HospitalManagementSystem:
         sorted_data.sort(key=lambda p: (not p.evaluate_logic(),))
         end_time = time.time()
 
-        print("\n--- Sorted Patients (logic=True first) ---")
-        for p in sorted_data:
-            logic_result = p.evaluate_logic()
-            print(f"  [{'+' if logic_result else ' '}] {p}")
+        label_map = {'id': 'ID', 'name': 'Name', 'age': 'Age', 'score': 'Score'}
+        print(f"\n--- Sorted by {label_map[key]} ({'Bubble' if algorithm == 'bubble' else 'Merge'} Sort) ---")
+        for i, p in enumerate(sorted_data, 1):
+            print(f"  {i}. {getattr(p, key)}")
         print(f"\nSorting took {round(end_time - start_time, 6)} seconds.")
 
     def show_numeral_systems(self):
