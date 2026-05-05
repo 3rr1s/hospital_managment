@@ -1,2 +1,3 @@
 id,name,age,illness,score,logic_expr
 1,erris,20,headache,8.0,age > 20 and score > 8
+101,erris,20,ehadache,8.0,age > 20 and score > 8

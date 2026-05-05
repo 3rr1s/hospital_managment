@@ -188,14 +188,27 @@ class HospitalManagementSystem:
             pass
 
     def _autosave(self):
-        filename = "hospital_patients.csv"
         try:
             records = [
                 {'id': p.id, 'name': p.name, 'age': p.age,
                  'illness': p.illness, 'score': p.score, 'logic_expr': p.logic_expr}
                 for p in self.patients.values()
             ]
-            pd.DataFrame(records).to_csv(filename, index=False)
+            df = pd.DataFrame(records)
+            df.to_csv("hospital_patients.csv", index=False)
+
+            excel_records = [
+                {
+                    'ID': p.id, 'Name': p.name, 'Age': p.age,
+                    'Illness': p.illness, 'Score (0-10)': p.score,
+                    'Logical Expression': p.logic_expr
+                }
+                for p in self.patients.values()
+            ]
+            excel_df = pd.DataFrame(excel_records) if excel_records else pd.DataFrame(
+                columns=['ID', 'Name', 'Age', 'Illness', 'Score (0-10)', 'Logical Expression']
+            )
+            excel_df.to_excel("hospital_patients.xlsx", index=False)
         except Exception as e:
             print(f"  Auto-save failed: {e}")
 
