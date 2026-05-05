@@ -160,6 +160,44 @@ class HospitalManagementSystem:
     def __init__(self):
         self.patients: Dict[str, Patient] = {}
         self.unique_illnesses: set = set()
+        self._silent_load()
+
+    def _silent_load(self):
+        filename = "hospital_patients.csv"
+        try:
+            df = pd.read_csv(filename)
+            df.columns = [c.strip().lower() for c in df.columns]
+            col_map = {
+                'patientid': 'id', 'patient_id': 'id', 'name': 'name', 'age': 'age',
+                'condition': 'illness', 'illness': 'illness', 'diagnosis': 'illness',
+                'severitylevel': 'score', 'severity_level': 'score', 'score': 'score',
+                'logicalexpression': 'logic_expr', 'logical_expression': 'logic_expr', 'logic_expr': 'logic_expr'
+            }
+            df.rename(columns=col_map, inplace=True)
+            for _, row in df.iterrows():
+                try:
+                    pid = str(row['id'])
+                    self.patients[pid] = Patient(pid, str(row['name']), int(row['age']),
+                                                  str(row.get('illness', 'Unknown')),
+                                                  float(row.get('score', 0.0)),
+                                                  str(row.get('logic_expr', '')))
+                    self.unique_illnesses.add(str(row.get('illness', 'Unknown')))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    def _autosave(self):
+        filename = "hospital_patients.csv"
+        try:
+            records = [
+                {'id': p.id, 'name': p.name, 'age': p.age,
+                 'illness': p.illness, 'score': p.score, 'logic_expr': p.logic_expr}
+                for p in self.patients.values()
+            ]
+            pd.DataFrame(records).to_csv(filename, index=False)
+        except Exception as e:
+            print(f"  Auto-save failed: {e}")
 
     def add_patient(self):
         pid = input("Enter patient ID: ").strip()
@@ -196,7 +234,8 @@ class HospitalManagementSystem:
         patient = Patient(pid, name, age, illness, score, logic_expr)
         self.patients[pid] = patient
         self.unique_illnesses.add(illness)
-        print("Patient added successfully!")
+        self._autosave()
+        print("  Patient added and saved to CSV.")
 
     def view_patients(self, patients: List[Patient] = None, show_numerals: bool = False):
         patient_list = patients if patients is not None else list(self.patients.values())
@@ -238,7 +277,8 @@ class HospitalManagementSystem:
         patient.score = score
         patient.logic_expr = logic_expr
         self.unique_illnesses.add(illness)
-        print("Patient updated successfully!")
+        self._autosave()
+        print("  Patient updated and saved to CSV.")
 
     def search_patients(self):
         query = input("Enter name, illness, or ID to search: ").strip()
