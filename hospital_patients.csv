@@ -5,3 +5,4 @@ id,name,age,illness,score,logic_expr
 123,erris,20,covid,10.0,nan
 1111,erris,23,head,7.0,age > 23 and score > 8
 P999,Test User,30,Fever,6.5,age > 25
+1234,erris,25,hh,3.0,age > 25 and score > 3

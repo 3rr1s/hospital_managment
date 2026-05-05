@@ -373,9 +373,14 @@ class HospitalManagementSystem:
             ]
             df = pd.DataFrame(records)
             df.to_csv(filename, index=False)
-            print(f"\n  Saved {len(records)} patient(s) to '{filename}'.")
+            print("\n================================================")
+            print(f"  SAVED {len(records)} patient(s) to '{filename}'.")
+            print("  Patients in file:")
+            for r in records:
+                print(f"    - [{r['id']}] {r['name']}, Age {r['age']}, {r['illness']}")
+            print("================================================")
         except Exception as e:
-            print(f"\n  Error saving CSV: {e}")
+            print(f"\n  ERROR saving CSV: {e}")
 
 
 # --------------------------
