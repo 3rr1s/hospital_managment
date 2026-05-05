@@ -187,6 +187,16 @@ class HospitalManagementSystem:
         except Exception:
             pass
 
+    def _autosave(self):
+        try:
+            records = [
+                {'id': p.id, 'name': p.name, 'age': p.age,
+                 'illness': p.illness, 'score': p.score, 'logic_expr': p.logic_expr}
+                for p in self.patients.values()
+            ]
+            pd.DataFrame(records).to_csv("hospital_patients.csv", index=False)
+        except Exception as e:
+            print(f"  Auto-save failed: {e}")
 
     def add_patient(self):
         pid = input("Enter patient ID: ").strip()
@@ -223,7 +233,8 @@ class HospitalManagementSystem:
         patient = Patient(pid, name, age, illness, score, logic_expr)
         self.patients[pid] = patient
         self.unique_illnesses.add(illness)
-        print("  Patient added. Press 10 to save to CSV.")
+        self._autosave()
+        print("  Patient added and saved to CSV.")
 
     def view_patients(self, patients: List[Patient] = None, show_numerals: bool = False):
         patient_list = patients if patients is not None else list(self.patients.values())
@@ -265,7 +276,8 @@ class HospitalManagementSystem:
         patient.score = score
         patient.logic_expr = logic_expr
         self.unique_illnesses.add(illness)
-        print("  Patient updated. Press 10 to save to CSV.")
+        self._autosave()
+        print("  Patient updated and saved to CSV.")
 
     def search_patients(self):
         query = input("Enter name, illness, or ID to search: ").strip()
@@ -398,8 +410,7 @@ def main():
         '7':  ('Numeral Systems View',   system.show_numeral_systems),
         '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
         '9':  ('Load from CSV',          system.load_from_csv),
-        '10': ('Save to CSV',            system.save_to_csv),
-        '11': ('Exit',                   None),
+        '10': ('Exit',                   None),
     }
 
     while True:
@@ -409,7 +420,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '11':
+        if choice == '10':
             print("Goodbye!")
             break
         elif choice in menu:
