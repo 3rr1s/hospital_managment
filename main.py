@@ -330,11 +330,11 @@ class HospitalManagementSystem:
                     loaded += 1
                 except Exception as e:
                     print(f"  Skipped row: {e}")
-            print(f"Loaded {loaded} patient(s) from '{filename}'.")
+            print(f"\n  Loaded {loaded} patient(s) from '{filename}'. Press 2 to view them.")
         except FileNotFoundError:
-            print(f"File '{filename}' not found.")
+            print(f"\n  File '{filename}' not found.")
         except Exception as e:
-            print(f"Error loading CSV: {e}")
+            print(f"\n  Error loading CSV: {e}")
 
     def save_to_csv(self):
         filename = "hospital_patients.csv"
@@ -346,9 +346,9 @@ class HospitalManagementSystem:
             ]
             df = pd.DataFrame(records)
             df.to_csv(filename, index=False)
-            print(f"Saved {len(records)} patient(s) to '{filename}'.")
+            print(f"\n  Saved {len(records)} patient(s) to '{filename}'.")
         except Exception as e:
-            print(f"Error saving CSV: {e}")
+            print(f"\n  Error saving CSV: {e}")
 
 # --------------------------
 # Main Menu

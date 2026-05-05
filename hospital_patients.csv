@@ -1,4 +1,5 @@
-PatientID,Name,Age,Condition,SeverityLevel,LogicalExpression
+id,name,age,illness,score,logic_expr
+1,erris,20,headache,8.0,age > 20 and score > 8
 P001,Alice,34,Flu,5.2,p and q
 P002,Bob,45,Fracture,8.4,p or q
 P003,Charlie,29,Diabetes,7.0,not p
