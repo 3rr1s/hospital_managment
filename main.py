@@ -288,6 +288,20 @@ class HospitalManagementSystem:
         self._autosave()
         print("  Patient updated and saved to CSV.")
 
+    def delete_patient(self):
+        pid = input("Enter patient ID to delete: ").strip()
+        if pid not in self.patients:
+            print("  Patient not found.")
+            return
+        patient = self.patients[pid]
+        confirm = input(f"  Delete [{pid}] {patient.name}? (yes/no): ").strip().lower()
+        if confirm == 'yes':
+            del self.patients[pid]
+            self._autosave()
+            print(f"  Patient [{pid}] {patient.name} deleted and removed from both files.")
+        else:
+            print("  Deletion cancelled.")
+
     def search_patients(self):
         query = input("Enter name, illness, or ID to search: ").strip()
         results = recursive_search(list(self.patients.values()), query)
@@ -413,13 +427,14 @@ def main():
         '1':  ('Add Patient',            system.add_patient),
         '2':  ('View Patients',          lambda: system.view_patients()),
         '3':  ('Edit Patient',           system.edit_patient),
-        '4':  ('Search Patients',        system.search_patients),
-        '5':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
-        '6':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
-        '7':  ('Numeral Systems View',   system.show_numeral_systems),
-        '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
-        '9':  ('Load from CSV',          system.load_from_csv),
-        '10': ('Exit',                   None),
+        '4':  ('Delete Patient',         system.delete_patient),
+        '5':  ('Search Patients',        system.search_patients),
+        '6':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
+        '7':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
+        '8':  ('Numeral Systems View',   system.show_numeral_systems),
+        '9':  ('Pandas Summary & Stats', system.show_pandas_summary),
+        '10': ('Load from CSV',          system.load_from_csv),
+        '11': ('Exit',                   None),
     }
 
     while True:
@@ -429,7 +444,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '10':
+        if choice == '11':
             print("Goodbye!")
             break
         elif choice in menu:
