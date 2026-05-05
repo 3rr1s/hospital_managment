@@ -261,15 +261,6 @@ class HospitalManagementSystem:
             print(f"  [{'+' if logic_result else ' '}] {p}")
         print(f"\nSorting took {round(end_time - start_time, 6)} seconds.")
 
-    def show_patient_tuples(self):
-        if not self.patients:
-            print("No patients in the system.")
-            return
-        tuples = [p.to_tuple() for p in self.patients.values()]
-        print("\n--- Patient Tuples (id, name, age, illness, score, logic_expr) ---")
-        for t in tuples:
-            print(t)
-
     def show_numeral_systems(self):
         if not self.patients:
             print("No patients in the system.")
@@ -281,9 +272,9 @@ class HospitalManagementSystem:
         if not self.patients:
             print("No patients in the system.")
             return
+        fields = ('ID', 'Name', 'Age', 'Illness', 'Score', 'Logic')
         records = [
-            {'ID': p.id, 'Name': p.name, 'Age': p.age,
-             'Illness': p.illness, 'Score': p.score, 'Logic': p.logic_expr}
+            dict(zip(fields, p.to_tuple()))
             for p in self.patients.values()
         ]
         df = pd.DataFrame(records)
@@ -353,18 +344,17 @@ class HospitalManagementSystem:
 def main():
     system = HospitalManagementSystem()
     menu = {
-        '1': ('Add Patient',                 system.add_patient),
-        '2': ('View Patients',               lambda: system.view_patients()),
-        '3': ('Edit Patient',                system.edit_patient),
-        '4': ('Search Patients',             system.search_patients),
-        '5': ('Sort (Bubble Sort)',          lambda: system.sort_patients('bubble')),
-        '6': ('Sort (Merge Sort)',           lambda: system.sort_patients('merge')),
-        '7': ('View as Tuples',             system.show_patient_tuples),
-        '8': ('Numeral Systems View',        system.show_numeral_systems),
-        '9': ('Pandas Summary & Stats',      system.show_pandas_summary),
-        '10': ('Load from CSV',             system.load_from_csv),
-        '11': ('Save to CSV',               system.save_to_csv),
-        '12': ('Exit',                      None),
+        '1':  ('Add Patient',            system.add_patient),
+        '2':  ('View Patients',          lambda: system.view_patients()),
+        '3':  ('Edit Patient',           system.edit_patient),
+        '4':  ('Search Patients',        system.search_patients),
+        '5':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
+        '6':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
+        '7':  ('Numeral Systems View',   system.show_numeral_systems),
+        '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
+        '9':  ('Load from CSV',          system.load_from_csv),
+        '10': ('Save to CSV',            system.save_to_csv),
+        '11': ('Exit',                   None),
     }
 
     while True:
@@ -374,7 +364,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '12':
+        if choice == '11':
             print("Goodbye!")
             break
         elif choice in menu:
