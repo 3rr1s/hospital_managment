@@ -179,7 +179,19 @@ class HospitalManagementSystem:
         except ValueError:
             print("Invalid score. Must be a number.")
             return
-        logic_expr = input("Enter logical expression (e.g., 'age > 50 and score > 7'): ").strip()
+        print("\n  --- Logical Expression Help ---")
+        print("  You can write a condition using the patient's age and score.")
+        print("  Available variables:  age   score")
+        print("  Available operators:  >  <  >=  <=  ==  and  or  not")
+        print("  Examples:")
+        print("    age > 50                  (patient is older than 50)")
+        print("    score > 7                 (score is above 7)")
+        print("    age > 50 and score > 7    (both conditions must be true)")
+        print("    age < 30 or score >= 9    (either condition is true)")
+        print("    not age > 60              (patient is NOT older than 60)")
+        print("  Press Enter to skip (no expression).")
+        print("  -------------------------------")
+        logic_expr = input("  Enter logical expression: ").strip()
 
         patient = Patient(pid, name, age, illness, score, logic_expr)
         self.patients[pid] = patient
