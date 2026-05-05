@@ -7,3 +7,4 @@ id,name,age,illness,score,logic_expr
 P999,Test User,30,Fever,6.5,age > 25
 1234,erris,25,hh,3.0,age > 25 and score > 3
 123456,erris,22,headache,10.0,age > 22 and score > 10
+999999,Sarah,28,Asthma,6.0,age > 25
