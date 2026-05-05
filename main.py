@@ -187,30 +187,6 @@ class HospitalManagementSystem:
         except Exception:
             pass
 
-    def _autosave(self):
-        try:
-            records = [
-                {'id': p.id, 'name': p.name, 'age': p.age,
-                 'illness': p.illness, 'score': p.score, 'logic_expr': p.logic_expr}
-                for p in self.patients.values()
-            ]
-            df = pd.DataFrame(records)
-            df.to_csv("hospital_patients.csv", index=False)
-
-            excel_records = [
-                {
-                    'ID': p.id, 'Name': p.name, 'Age': p.age,
-                    'Illness': p.illness, 'Score (0-10)': p.score,
-                    'Logical Expression': p.logic_expr
-                }
-                for p in self.patients.values()
-            ]
-            excel_df = pd.DataFrame(excel_records) if excel_records else pd.DataFrame(
-                columns=['ID', 'Name', 'Age', 'Illness', 'Score (0-10)', 'Logical Expression']
-            )
-            excel_df.to_excel("hospital_patients.xlsx", index=False)
-        except Exception as e:
-            print(f"  Auto-save failed: {e}")
 
     def add_patient(self):
         pid = input("Enter patient ID: ").strip()
@@ -247,8 +223,7 @@ class HospitalManagementSystem:
         patient = Patient(pid, name, age, illness, score, logic_expr)
         self.patients[pid] = patient
         self.unique_illnesses.add(illness)
-        self._autosave()
-        print("  Patient added and saved to CSV.")
+        print("  Patient added. Press 10 to save to CSV.")
 
     def view_patients(self, patients: List[Patient] = None, show_numerals: bool = False):
         patient_list = patients if patients is not None else list(self.patients.values())
@@ -290,8 +265,7 @@ class HospitalManagementSystem:
         patient.score = score
         patient.logic_expr = logic_expr
         self.unique_illnesses.add(illness)
-        self._autosave()
-        print("  Patient updated and saved to CSV.")
+        print("  Patient updated. Press 10 to save to CSV.")
 
     def search_patients(self):
         query = input("Enter name, illness, or ID to search: ").strip()
@@ -403,43 +377,6 @@ class HospitalManagementSystem:
         except Exception as e:
             print(f"\n  Error saving CSV: {e}")
 
-    def view_csv(self):
-        filename = "hospital_patients.csv"
-        try:
-            with open(filename, 'r') as f:
-                lines = f.readlines()
-            if len(lines) <= 1:
-                print("\n  The CSV file is empty (no patients saved yet).")
-                return
-            print(f"\n  --- Contents of {filename} ---")
-            for line in lines:
-                print(" ", line.strip())
-            print(f"  --- {len(lines) - 1} patient(s) in file ---")
-        except FileNotFoundError:
-            print(f"\n  '{filename}' not found. Use Save to CSV first.")
-
-    def export_to_excel(self):
-        filename = "hospital_patients.xlsx"
-        try:
-            records = [
-                {
-                    'ID':                  p.id,
-                    'Name':                p.name,
-                    'Age':                 p.age,
-                    'Illness':             p.illness,
-                    'Score (0-10)':        p.score,
-                    'Logical Expression':  p.logic_expr
-                }
-                for p in self.patients.values()
-            ]
-            df = pd.DataFrame(records) if records else pd.DataFrame(
-                columns=['ID', 'Name', 'Age', 'Illness', 'Score (0-10)', 'Logical Expression']
-            )
-            df.to_excel(filename, index=False)
-            print(f"\n  Exported {len(records)} patient(s) to '{filename}'.")
-            print(f"  Open '{filename}' in Excel or Google Sheets to view it as a spreadsheet.")
-        except Exception as e:
-            print(f"\n  Error exporting to Excel: {e}")
 
 # --------------------------
 # Main Menu
@@ -447,19 +384,17 @@ class HospitalManagementSystem:
 def main():
     system = HospitalManagementSystem()
     menu = {
-        '1':  ('Add Patient',                system.add_patient),
-        '2':  ('View Patients',              lambda: system.view_patients()),
-        '3':  ('Edit Patient',               system.edit_patient),
-        '4':  ('Search Patients',            system.search_patients),
-        '5':  ('Sort (Bubble Sort)',         lambda: system.sort_patients('bubble')),
-        '6':  ('Sort (Merge Sort)',          lambda: system.sort_patients('merge')),
-        '7':  ('Numeral Systems View',       system.show_numeral_systems),
-        '8':  ('Pandas Summary & Stats',     system.show_pandas_summary),
-        '9':  ('Load from CSV',              system.load_from_csv),
-        '10': ('Save to CSV',                system.save_to_csv),
-        '11': ('View CSV File',              system.view_csv),
-        '12': ('Export to Excel (.xlsx)',    system.export_to_excel),
-        '13': ('Exit',                       None),
+        '1':  ('Add Patient',            system.add_patient),
+        '2':  ('View Patients',          lambda: system.view_patients()),
+        '3':  ('Edit Patient',           system.edit_patient),
+        '4':  ('Search Patients',        system.search_patients),
+        '5':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
+        '6':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
+        '7':  ('Numeral Systems View',   system.show_numeral_systems),
+        '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
+        '9':  ('Load from CSV',          system.load_from_csv),
+        '10': ('Save to CSV',            system.save_to_csv),
+        '11': ('Exit',                   None),
     }
 
     while True:
@@ -469,7 +404,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '13':
+        if choice == '11':
             print("Goodbye!")
             break
         elif choice in menu:
