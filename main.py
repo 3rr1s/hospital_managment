@@ -405,24 +405,48 @@ class HospitalManagementSystem:
         except FileNotFoundError:
             print(f"\n  '{filename}' not found. Use Save to CSV first.")
 
+    def export_to_excel(self):
+        filename = "hospital_patients.xlsx"
+        try:
+            records = [
+                {
+                    'ID':                  p.id,
+                    'Name':                p.name,
+                    'Age':                 p.age,
+                    'Illness':             p.illness,
+                    'Score (0-10)':        p.score,
+                    'Logical Expression':  p.logic_expr
+                }
+                for p in self.patients.values()
+            ]
+            df = pd.DataFrame(records) if records else pd.DataFrame(
+                columns=['ID', 'Name', 'Age', 'Illness', 'Score (0-10)', 'Logical Expression']
+            )
+            df.to_excel(filename, index=False)
+            print(f"\n  Exported {len(records)} patient(s) to '{filename}'.")
+            print(f"  Open '{filename}' in Excel or Google Sheets to view it as a spreadsheet.")
+        except Exception as e:
+            print(f"\n  Error exporting to Excel: {e}")
+
 # --------------------------
 # Main Menu
 # --------------------------
 def main():
     system = HospitalManagementSystem()
     menu = {
-        '1':  ('Add Patient',            system.add_patient),
-        '2':  ('View Patients',          lambda: system.view_patients()),
-        '3':  ('Edit Patient',           system.edit_patient),
-        '4':  ('Search Patients',        system.search_patients),
-        '5':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
-        '6':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
-        '7':  ('Numeral Systems View',   system.show_numeral_systems),
-        '8':  ('Pandas Summary & Stats', system.show_pandas_summary),
-        '9':  ('Load from CSV',          system.load_from_csv),
-        '10': ('Save to CSV',            system.save_to_csv),
-        '11': ('View CSV File',          system.view_csv),
-        '12': ('Exit',                   None),
+        '1':  ('Add Patient',                system.add_patient),
+        '2':  ('View Patients',              lambda: system.view_patients()),
+        '3':  ('Edit Patient',               system.edit_patient),
+        '4':  ('Search Patients',            system.search_patients),
+        '5':  ('Sort (Bubble Sort)',         lambda: system.sort_patients('bubble')),
+        '6':  ('Sort (Merge Sort)',          lambda: system.sort_patients('merge')),
+        '7':  ('Numeral Systems View',       system.show_numeral_systems),
+        '8':  ('Pandas Summary & Stats',     system.show_pandas_summary),
+        '9':  ('Load from CSV',              system.load_from_csv),
+        '10': ('Save to CSV',                system.save_to_csv),
+        '11': ('View CSV File',              system.view_csv),
+        '12': ('Export to Excel (.xlsx)',    system.export_to_excel),
+        '13': ('Exit',                       None),
     }
 
     while True:
@@ -432,7 +456,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '12':
+        if choice == '13':
             print("Goodbye!")
             break
         elif choice in menu:
