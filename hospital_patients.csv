@@ -1,10 +1,2 @@
 id,name,age,illness,score,logic_expr
-1,erris,20,headache,8.0,age > 20 and score > 8
-101,erris,20,ehadache,8.0,age > 20 and score > 8
-1002,rrona,21,headache,9.0,age > 21 and score > 9
-123,erris,20,covid,10.0,nan
-1111,erris,23,head,7.0,age > 23 and score > 8
-P999,Test User,30,Fever,6.5,age > 25
-1234,erris,25,hh,3.0,age > 25 and score > 3
-123456,erris,22,headache,10.0,age > 22 and score > 10
-333,erris,11,qq,2.0,nan
+1001,erris,20,headache,9.0,

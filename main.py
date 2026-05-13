@@ -3,6 +3,7 @@ import time
 import ast
 import operator
 import pandas as pd
+from abc import ABC, abstractmethod
 from typing import List, Dict
 
 # -------------------------------
@@ -93,11 +94,12 @@ class Patient:
                 f"  Score(int) -> Binary: {score_bin}, Octal: {score_oct}, Hex: {score_hex}")
 
 # --------------------------
-# Sorting Strategy (OOP)
+# Sorting Strategy (Abstract Base Class)
 # --------------------------
-class SortingStrategy:
+class SortingStrategy(ABC):
+    @abstractmethod
     def sort(self, data: List[Patient], key: str) -> List[Patient]:
-        raise NotImplementedError("This method should be overridden.")
+        pass
 
     @staticmethod
     def get_value(patient: Patient, key: str):
@@ -331,9 +333,100 @@ class HospitalManagementSystem:
 
         label_map = {'id': 'ID', 'name': 'Name', 'age': 'Age', 'score': 'Score'}
         print(f"\n--- Sorted by {label_map[key]} ({'Bubble' if algorithm == 'bubble' else 'Merge'} Sort) ---")
+        print(f"  {'#':<4} {label_map[key]:<20} {'Logic Result':<14} {'Expression'}")
+        print(f"  {'-'*70}")
         for i, p in enumerate(sorted_data, 1):
-            print(f"  {i}. {getattr(p, key)}")
+            logic_result = p.evaluate_logic()
+            flag = 'TRUE ' if logic_result else 'FALSE'
+            print(f"  {i:<4} {str(getattr(p, key)):<20} {flag:<14} {p.logic_expr}")
         print(f"\nSorting took {round(end_time - start_time, 6)} seconds.")
+
+    def show_truth_table(self):
+        if not self.patients:
+            print("No patients in the system.")
+            return
+        print("\n========== Truth Table (Logical Expression Evaluation) ==========")
+        print("  p = (score > 5)   |   q = (age > 30)\n")
+        for p in self.patients.values():
+            expr = p.logic_expr.strip()
+            if not expr or expr == 'nan':
+                continue
+            variables = {"age": p.age, "score": p.score,
+                         "p": p.score > 5, "q": p.age > 30}
+            norm_expr = (expr.replace("∧"," and ").replace("∨"," or ")
+                             .replace("¬"," not ").replace("→","<=").replace("⇔","=="))
+
+            # Try to split into two sub-parts (A and/or B)
+            connector = None
+            parts = None
+            if ' and ' in norm_expr:
+                parts = norm_expr.split(' and ', 1)
+                connector = 'AND'
+            elif ' or ' in norm_expr:
+                parts = norm_expr.split(' or ', 1)
+                connector = 'OR'
+
+            print(f"  Patient: {p.name} (ID: {p.id}) | age={p.age}, score={p.score}")
+            print(f"  Expression: {expr}")
+
+            if parts and connector:
+                A_expr, B_expr = parts[0].strip(), parts[1].strip()
+                A_actual = safe_eval(A_expr, variables)
+                B_actual = safe_eval(B_expr, variables)
+
+                col1 = f"A: {A_expr}"[:22]
+                col2 = f"B: {B_expr}"[:22]
+                print(f"  +{'-'*24}+{'-'*24}+{'-'*10}+")
+                print(f"  | {col1:<22} | {col2:<22} | {'Result':<8} |")
+                print(f"  +{'-'*24}+{'-'*24}+{'-'*10}+")
+                for A in [True, False]:
+                    for B in [True, False]:
+                        result = (A and B) if connector == 'AND' else (A or B)
+                        marker = " <--" if (A == A_actual and B == B_actual) else ""
+                        print(f"  | {str(A):<22} | {str(B):<22} | {str(result):<8} |{marker}")
+                print(f"  +{'-'*24}+{'-'*24}+{'-'*10}+")
+            else:
+                result = safe_eval(norm_expr, variables)
+                print(f"  +{'-'*30}+{'-'*10}+")
+                print(f"  | {'Expression':<28} | {'Result':<8} |")
+                print(f"  +{'-'*30}+{'-'*10}+")
+                print(f"  | {expr:<28} | {str(result):<8} |")
+                print(f"  +{'-'*30}+{'-'*10}+")
+            print()
+
+    def compare_sorting(self):
+        if not self.patients:
+            print("No patients to sort.")
+            return
+        key_map = {'1': 'id', '2': 'name', '3': 'age', '4': 'score'}
+        print("\nCompare sorting by:\n1. ID\n2. Name\n3. Age\n4. Score")
+        key_choice = input("Choose sort key (1-4): ").strip()
+        key = key_map.get(key_choice, 'name')
+        RUNS = 3
+        bubble = BubbleSort()
+        merge  = MergeSort()
+        bubble_times = []
+        merge_times  = []
+        for _ in range(RUNS):
+            data = list(self.patients.values())
+            t0 = time.time(); bubble.sort(data[:], key); bubble_times.append(time.time() - t0)
+            t0 = time.time(); merge.sort(data[:],  key); merge_times.append(time.time() - t0)
+
+        print(f"\n--- Sorting Performance Comparison (key: {key}, {len(self.patients)} patients, {RUNS} runs) ---")
+        header = f"  {'Algorithm':<15}" + "".join(f"  {'Run '+str(i):<12}" for i in range(1, RUNS+1)) + f"  {'Average':<12}"
+        print(header)
+        print("  " + "-" * (13 + 14 * (RUNS + 1)))
+
+        b_avg = sum(bubble_times) / RUNS
+        m_avg = sum(merge_times)  / RUNS
+        b_row = f"  {'Bubble Sort':<15}" + "".join(f"  {t:.6f}s   " for t in bubble_times) + f"  {b_avg:.6f}s"
+        m_row = f"  {'Merge Sort':<15}"  + "".join(f"  {t:.6f}s   " for t in merge_times)  + f"  {m_avg:.6f}s"
+        print(b_row)
+        print(m_row)
+        print("  " + "-" * (13 + 14 * (RUNS + 1)))
+        winner = "Bubble Sort" if b_avg < m_avg else "Merge Sort"
+        diff   = abs(b_avg - m_avg)
+        print(f"\n  Winner: {winner} (faster by {diff:.6f}s on average)")
 
     def show_numeral_systems(self):
         if not self.patients:
@@ -429,12 +522,14 @@ def main():
         '3':  ('Edit Patient',           system.edit_patient),
         '4':  ('Delete Patient',         system.delete_patient),
         '5':  ('Search Patients',        system.search_patients),
-        '6':  ('Sort (Bubble Sort)',     lambda: system.sort_patients('bubble')),
-        '7':  ('Sort (Merge Sort)',      lambda: system.sort_patients('merge')),
-        '8':  ('Numeral Systems View',   system.show_numeral_systems),
-        '9':  ('Pandas Summary & Stats', system.show_pandas_summary),
-        '10': ('Load from CSV',          system.load_from_csv),
-        '11': ('Exit',                   None),
+        '6':  ('Sort (Bubble Sort)',           lambda: system.sort_patients('bubble')),
+        '7':  ('Sort (Merge Sort)',            lambda: system.sort_patients('merge')),
+        '8':  ('Sort Performance Comparison',  system.compare_sorting),
+        '9':  ('Truth Table',                  system.show_truth_table),
+        '10': ('Numeral Systems View',         system.show_numeral_systems),
+        '11': ('Pandas Summary & Stats',       system.show_pandas_summary),
+        '12': ('Load from CSV',                system.load_from_csv),
+        '13': ('Exit',                         None),
     }
 
     while True:
@@ -444,7 +539,7 @@ def main():
         print("================================================")
         choice = input("Choose option: ").strip()
 
-        if choice == '11':
+        if choice == '13':
             print("Goodbye!")
             break
         elif choice in menu:
