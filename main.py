@@ -210,42 +210,61 @@ class HospitalManagementSystem:
             print(f"  Auto-save failed: {e}")
 
     def add_patient(self):
-        pid = input("Enter patient ID: ").strip()
-        if pid in self.patients:
-            print("Patient ID already exists!")
-            return
-        name = input("Enter patient name: ").strip()
-        age_input = input("Enter patient age: ").strip()
-        if not age_input.isdigit():
-            print("Invalid age. Must be a whole number.")
-            return
-        age = int(age_input)
-        illness = input("Enter patient illness: ").strip()
-        score_input = input("Enter patient score (0-10): ").strip()
         try:
-            score = float(score_input)
-        except ValueError:
-            print("Invalid score. Must be a number.")
-            return
-        print("\n  --- Logical Expression Help ---")
-        print("  You can write a condition using the patient's age and score.")
-        print("  Available variables:  age   score")
-        print("  Available operators:  >  <  >=  <=  ==  and  or  not")
-        print("  Examples:")
-        print("    age > 50                  (patient is older than 50)")
-        print("    score > 7                 (score is above 7)")
-        print("    age > 50 and score > 7    (both conditions must be true)")
-        print("    age < 30 or score >= 9    (either condition is true)")
-        print("    not age > 60              (patient is NOT older than 60)")
-        print("  Press Enter to skip (no expression).")
-        print("  -------------------------------")
-        logic_expr = input("  Enter logical expression: ").strip()
+            pid = input("Enter patient ID: ").strip()
+            if not pid:
+                print("  Error: Patient ID cannot be empty.")
+                return
+            if pid in self.patients:
+                print(f"  Error: Patient ID '{pid}' already exists. Use a unique ID.")
+                return
+            name = input("Enter patient name: ").strip()
+            if not name:
+                print("  Error: Patient name cannot be empty.")
+                return
+            age_input = input("Enter patient age (whole number): ").strip()
+            if not age_input.isdigit():
+                print(f"  Error: Age must be a whole number (e.g. 25). You entered: '{age_input}'")
+                return
+            age = int(age_input)
+            valid_ages: range = range(0, 151)
+            if age not in valid_ages:
+                print(f"  Error: Age {age} is outside the valid range (0–150).")
+                return
+            illness = input("Enter patient illness: ").strip()
+            if not illness:
+                print("  Error: Illness field cannot be empty.")
+                return
+            score_input = input("Enter patient score (0.0 – 10.0): ").strip()
+            try:
+                score = float(score_input)
+                if not (0.0 <= score <= 10.0):
+                    print(f"  Error: Score must be between 0.0 and 10.0. You entered: {score}")
+                    return
+            except ValueError:
+                print(f"  Error: Score must be a decimal number (e.g. 7.5). You entered: '{score_input}'")
+                return
+            print("\n  --- Logical Expression Help ---")
+            print("  You can write a condition using the patient's age and score.")
+            print("  Available variables:  age   score")
+            print("  Available operators:  >  <  >=  <=  ==  and  or  not")
+            print("  Examples:")
+            print("    age > 50                  (patient is older than 50)")
+            print("    score > 7                 (score is above 7)")
+            print("    age > 50 and score > 7    (both conditions must be true)")
+            print("    age < 30 or score >= 9    (either condition is true)")
+            print("    not age > 60              (patient is NOT older than 60)")
+            print("  Press Enter to skip (no expression).")
+            print("  -------------------------------")
+            logic_expr = input("  Enter logical expression: ").strip()
 
-        patient = Patient(pid, name, age, illness, score, logic_expr)
-        self.patients[pid] = patient
-        self.unique_illnesses.add(illness)
-        self._autosave()
-        print("  Patient added and saved to CSV.")
+            patient = Patient(pid, name, age, illness, score, logic_expr)
+            self.patients[pid] = patient
+            self.unique_illnesses.add(illness)
+            self._autosave()
+            print(f"  Patient '{name}' (ID: {pid}) added and saved to CSV.")
+        except Exception as e:
+            print(f"  Unexpected error while adding patient: {e}")
 
     def view_patients(self, patients: List[Patient] = None, show_numerals: bool = False):
         patient_list = patients if patients is not None else list(self.patients.values())
@@ -262,33 +281,57 @@ class HospitalManagementSystem:
         print(f"\nUnique illnesses on record: {self.unique_illnesses}")
 
     def edit_patient(self):
-        pid = input("Enter the ID of the patient to edit: ").strip()
-        if pid not in self.patients:
-            print("Patient not found.")
-            return
-
-        patient = self.patients[pid]
-        print(f"Editing: {patient}")
-
-        name = input(f"New name (blank = keep '{patient.name}'): ").strip() or patient.name
-        age_input = input(f"New age (blank = keep '{patient.age}'): ").strip()
-        age = int(age_input) if age_input.isdigit() else patient.age
-        illness = input(f"New illness (blank = keep '{patient.illness}'): ").strip() or patient.illness
-        score_input = input(f"New score (blank = keep '{patient.score}'): ").strip()
         try:
-            score = float(score_input) if score_input else patient.score
-        except ValueError:
-            score = patient.score
-        logic_expr = input(f"New logical expression (blank = keep '{patient.logic_expr}'): ").strip() or patient.logic_expr
+            pid = input("Enter the ID of the patient to edit: ").strip()
+            if pid not in self.patients:
+                print(f"  Error: No patient found with ID '{pid}'. Use option 2 to view all IDs.")
+                return
 
-        patient.name = name
-        patient.age = age
-        patient.illness = illness
-        patient.score = score
-        patient.logic_expr = logic_expr
-        self.unique_illnesses.add(illness)
-        self._autosave()
-        print("  Patient updated and saved to CSV.")
+            patient = self.patients[pid]
+            print(f"  Editing: {patient}")
+
+            name = input(f"  New name (blank = keep '{patient.name}'): ").strip() or patient.name
+
+            age_input = input(f"  New age (blank = keep '{patient.age}'): ").strip()
+            if age_input:
+                if not age_input.isdigit():
+                    print(f"  Error: Age must be a whole number. Keeping current value ({patient.age}).")
+                    age = patient.age
+                else:
+                    age = int(age_input)
+                    if age not in range(0, 151):
+                        print(f"  Error: Age {age} out of range (0–150). Keeping current value ({patient.age}).")
+                        age = patient.age
+            else:
+                age = patient.age
+
+            illness = input(f"  New illness (blank = keep '{patient.illness}'): ").strip() or patient.illness
+
+            score_input = input(f"  New score (blank = keep '{patient.score}'): ").strip()
+            if score_input:
+                try:
+                    score = float(score_input)
+                    if not (0.0 <= score <= 10.0):
+                        print(f"  Error: Score must be 0.0–10.0. Keeping current value ({patient.score}).")
+                        score = patient.score
+                except ValueError:
+                    print(f"  Error: '{score_input}' is not a valid number. Keeping current value ({patient.score}).")
+                    score = patient.score
+            else:
+                score = patient.score
+
+            logic_expr = input(f"  New logical expression (blank = keep '{patient.logic_expr}'): ").strip() or patient.logic_expr
+
+            patient.name    = name
+            patient.age     = age
+            patient.illness = illness
+            patient.score   = score
+            patient.logic_expr = logic_expr
+            self.unique_illnesses.add(illness)
+            self._autosave()
+            print(f"  Patient '{pid}' updated and saved to CSV.")
+        except Exception as e:
+            print(f"  Unexpected error while editing patient: {e}")
 
     def delete_patient(self):
         pid = input("Enter patient ID to delete: ").strip()
@@ -306,40 +349,81 @@ class HospitalManagementSystem:
 
     def search_patients(self):
         query = input("Enter name, illness, or ID to search: ").strip()
-        results = recursive_search(list(self.patients.values()), query)
-        if results:
-            print(f"\nFound {len(results)} result(s):")
-            self.view_patients(results)
+        if not query:
+            print("  Please enter a search term.")
+            return
+        try:
+            results = recursive_search(list(self.patients.values()), query)
+            if results:
+                print(f"\n  Found {len(results)} result(s) for '{query}':")
+                print(f"  {'ID':<10} {'Name':<15} {'Illness':<15} {'Score':<8} {'Cond A':<8} {'Cond B':<8} {'Result'}")
+                print(f"  {'-'*75}")
+                for p in results:
+                    A, B, op, result = self._get_two_conditions(p)
+                    a_str = str(A) if A is not None else 'N/A'
+                    b_str = str(B) if B is not None else 'N/A'
+                    r_str = 'TRUE' if result else 'FALSE'
+                    print(f"  {p.id:<10} {p.name:<15} {p.illness:<15} {p.score:<8} {a_str:<8} {b_str:<8} {r_str}")
+            else:
+                print(f"  No patients found matching '{query}'. Check the spelling and try again.")
+        except Exception as e:
+            print(f"  Search error: {e}")
+
+    def _get_two_conditions(self, p: 'Patient'):
+        expr = p.logic_expr.strip() if p.logic_expr and p.logic_expr != 'nan' else ''
+        variables = {"age": p.age, "score": p.score, "p": p.score > 5, "q": p.age > 30}
+        if not expr:
+            return None, None, 'N/A', False
+        norm = (expr.replace("∧"," and ").replace("∨"," or ")
+                    .replace("¬"," not ").replace("→","<=").replace("⇔","=="))
+        if ' and ' in norm:
+            parts = norm.split(' and ', 1)
+            A = safe_eval(parts[0].strip(), variables)
+            B = safe_eval(parts[1].strip(), variables)
+            return A, B, 'AND', (A and B)
+        elif ' or ' in norm:
+            parts = norm.split(' or ', 1)
+            A = safe_eval(parts[0].strip(), variables)
+            B = safe_eval(parts[1].strip(), variables)
+            return A, B, 'OR', (A or B)
         else:
-            print("No matching patients found.")
+            A = safe_eval(norm, variables)
+            return A, None, 'SINGLE', A
 
     def sort_patients(self, algorithm: str):
         if not self.patients:
-            print("No patients to sort.")
+            print("  No patients to sort.")
             return
 
         key_map = {'1': 'id', '2': 'name', '3': 'age', '4': 'score'}
         print("\nSort by:\n1. ID\n2. Name\n3. Age\n4. Score")
         key_choice = input("Choose sort key (1-4): ").strip()
+        if key_choice not in key_map:
+            print("  Invalid choice. Defaulting to Name.")
         key = key_map.get(key_choice, 'name')
+        algo_name = 'Bubble Sort' if algorithm == 'bubble' else 'Merge Sort'
 
-        strategy = BubbleSort() if algorithm == 'bubble' else MergeSort()
-        print(f"Sorting by '{key}' using {'Bubble Sort' if algorithm == 'bubble' else 'Merge Sort'}...")
+        try:
+            strategy = BubbleSort() if algorithm == 'bubble' else MergeSort()
+            start_time = time.time()
+            sorted_data = strategy.sort(list(self.patients.values()), key)
+            sorted_data.sort(key=lambda p: (not p.evaluate_logic(),))
+            end_time = time.time()
 
-        start_time = time.time()
-        sorted_data = strategy.sort(list(self.patients.values()), key)
-        sorted_data.sort(key=lambda p: (not p.evaluate_logic(),))
-        end_time = time.time()
-
-        label_map = {'id': 'ID', 'name': 'Name', 'age': 'Age', 'score': 'Score'}
-        print(f"\n--- Sorted by {label_map[key]} ({'Bubble' if algorithm == 'bubble' else 'Merge'} Sort) ---")
-        print(f"  {'#':<4} {label_map[key]:<20} {'Logic Result':<14} {'Expression'}")
-        print(f"  {'-'*70}")
-        for i, p in enumerate(sorted_data, 1):
-            logic_result = p.evaluate_logic()
-            flag = 'TRUE ' if logic_result else 'FALSE'
-            print(f"  {i:<4} {str(getattr(p, key)):<20} {flag:<14} {p.logic_expr}")
-        print(f"\nSorting took {round(end_time - start_time, 6)} seconds.")
+            label_map = {'id': 'ID', 'name': 'Name', 'age': 'Age', 'score': 'Score'}
+            print(f"\n--- {algo_name} | Sorted by {label_map[key]} | Truth Table (2 Conditions) ---")
+            print(f"  {'#':<4} {label_map[key]:<14} {'Cond A':<8} {'Cond B':<8} {'Op':<6} {'Result'}")
+            print(f"  {'-'*60}")
+            for i, p in enumerate(sorted_data, 1):
+                A, B, op, result = self._get_two_conditions(p)
+                val = str(getattr(p, key))
+                a_str = str(A) if A is not None else 'N/A'
+                b_str = str(B) if B is not None else 'N/A'
+                r_str = 'TRUE' if result else 'FALSE'
+                print(f"  {i:<4} {val:<14} {a_str:<8} {b_str:<8} {op:<6} {r_str}  | {p.logic_expr}")
+            print(f"\n  Sorting took {round(end_time - start_time, 6)} seconds.")
+        except Exception as e:
+            print(f"  Sorting failed: {e}")
 
     def show_truth_table(self):
         if not self.patients:
@@ -396,37 +480,78 @@ class HospitalManagementSystem:
 
     def compare_sorting(self):
         if not self.patients:
-            print("No patients to sort.")
+            print("  No patients to sort.")
             return
         key_map = {'1': 'id', '2': 'name', '3': 'age', '4': 'score'}
         print("\nCompare sorting by:\n1. ID\n2. Name\n3. Age\n4. Score")
         key_choice = input("Choose sort key (1-4): ").strip()
+        if key_choice not in key_map:
+            print("  Invalid choice. Defaulting to Name.")
         key = key_map.get(key_choice, 'name')
         RUNS = 3
         bubble = BubbleSort()
         merge  = MergeSort()
-        bubble_times = []
-        merge_times  = []
+        data   = list(self.patients.values())
+
+        b_sort_times  = []
+        m_sort_times  = []
+        b_logic_times = []
+        m_logic_times = []
+
         for _ in range(RUNS):
-            data = list(self.patients.values())
-            t0 = time.time(); bubble.sort(data[:], key); bubble_times.append(time.time() - t0)
-            t0 = time.time(); merge.sort(data[:],  key); merge_times.append(time.time() - t0)
+            t0 = time.time()
+            bubble.sort(data[:], key)
+            b_sort_times.append(time.time() - t0)
 
-        print(f"\n--- Sorting Performance Comparison (key: {key}, {len(self.patients)} patients, {RUNS} runs) ---")
-        header = f"  {'Algorithm':<15}" + "".join(f"  {'Run '+str(i):<12}" for i in range(1, RUNS+1)) + f"  {'Average':<12}"
-        print(header)
-        print("  " + "-" * (13 + 14 * (RUNS + 1)))
+            t0 = time.time()
+            merge.sort(data[:], key)
+            m_sort_times.append(time.time() - t0)
 
-        b_avg = sum(bubble_times) / RUNS
-        m_avg = sum(merge_times)  / RUNS
-        b_row = f"  {'Bubble Sort':<15}" + "".join(f"  {t:.6f}s   " for t in bubble_times) + f"  {b_avg:.6f}s"
-        m_row = f"  {'Merge Sort':<15}"  + "".join(f"  {t:.6f}s   " for t in merge_times)  + f"  {m_avg:.6f}s"
-        print(b_row)
-        print(m_row)
-        print("  " + "-" * (13 + 14 * (RUNS + 1)))
-        winner = "Bubble Sort" if b_avg < m_avg else "Merge Sort"
-        diff   = abs(b_avg - m_avg)
-        print(f"\n  Winner: {winner} (faster by {diff:.6f}s on average)")
+            t0 = time.time()
+            r1 = bubble.sort(data[:], key)
+            r1.sort(key=lambda p: (not p.evaluate_logic(),))
+            b_logic_times.append(time.time() - t0)
+
+            t0 = time.time()
+            r2 = merge.sort(data[:], key)
+            r2.sort(key=lambda p: (not p.evaluate_logic(),))
+            m_logic_times.append(time.time() - t0)
+
+        b_sort_avg  = sum(b_sort_times)  / RUNS
+        m_sort_avg  = sum(m_sort_times)  / RUNS
+        b_logic_avg = sum(b_logic_times) / RUNS
+        m_logic_avg = sum(m_logic_times) / RUNS
+
+        n = len(self.patients)
+        print(f"\n{'='*60}")
+        print(f"  MEASUREMENT 1: Sort Only  ({n} patient(s), {RUNS} runs each)")
+        print(f"{'='*60}")
+        print(f"  {'Algorithm':<22} {'Run 1':<12} {'Run 2':<12} {'Run 3':<12} {'Average'}")
+        print(f"  {'-'*58}")
+        print(f"  {'Bubble Sort':<22}" + "".join(f"{t:.6f}s   " for t in b_sort_times) + f"  {b_sort_avg:.6f}s")
+        print(f"  {'Merge Sort (recursive)':<22}" + "".join(f"{t:.6f}s   " for t in m_sort_times) + f"  {m_sort_avg:.6f}s")
+        w1 = "Bubble Sort" if b_sort_avg <= m_sort_avg else "Merge Sort"
+        print(f"\n  Winner (sort only): {w1}")
+
+        print(f"\n{'='*60}")
+        print(f"  MEASUREMENT 2: Sort + Truth Table Evaluation  ({RUNS} runs each)")
+        print(f"{'='*60}")
+        print(f"  {'Algorithm':<22} {'Run 1':<12} {'Run 2':<12} {'Run 3':<12} {'Average'}")
+        print(f"  {'-'*58}")
+        print(f"  {'Bubble + Logic':<22}" + "".join(f"{t:.6f}s   " for t in b_logic_times) + f"  {b_logic_avg:.6f}s")
+        print(f"  {'Merge + Logic':<22}" + "".join(f"{t:.6f}s   " for t in m_logic_times) + f"  {m_logic_avg:.6f}s")
+        w2 = "Bubble Sort" if b_logic_avg <= m_logic_avg else "Merge Sort"
+        print(f"\n  Winner (sort + truth table): {w2}")
+
+        print(f"\n{'='*60}")
+        print(f"  IMPACT OF TRUTH TABLE EVALUATION (recursion overhead included)")
+        print(f"{'='*60}")
+        b_overhead = b_logic_avg - b_sort_avg
+        m_overhead = m_logic_avg - m_sort_avg
+        print(f"  Bubble Sort overhead: +{b_overhead:.6f}s")
+        print(f"  Merge Sort overhead:  +{m_overhead:.6f}s")
+        overall = "Bubble Sort" if b_logic_avg <= m_logic_avg else "Merge Sort"
+        print(f"\n  Overall fastest (with truth table): {overall}")
 
     def show_numeral_systems(self):
         if not self.patients:
