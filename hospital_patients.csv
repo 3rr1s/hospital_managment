@@ -1,2 +1,3 @@
 id,name,age,illness,score,logic_expr
-1001,erris,20,headache,9.0,
+1001,erris,20,headache,9.0,nan
+1002,erris,21,headache,9.0,age 21 > and scorre > 9

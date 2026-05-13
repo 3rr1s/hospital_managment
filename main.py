@@ -94,6 +94,40 @@ class Patient:
                 f"  Score(int) -> Binary: {score_bin}, Octal: {score_oct}, Hex: {score_hex}")
 
 # --------------------------
+# PatientReport — Subclass of Patient
+# --------------------------
+class PatientReport(Patient):
+    def __init__(self, id: str, name: str, age: int, illness: str, score: float = 0.0, logic_expr: str = "", notes: str = ""):
+        super().__init__(id, name, age, illness, score, logic_expr)
+        self.notes: str = notes
+        self.is_high_risk: bool = score > 7
+        self.risk_level: str = self._classify_risk()
+        self.age_group: str = self._classify_age()
+
+    def _classify_risk(self) -> str:
+        if self.score >= 8.0:
+            return "HIGH"
+        elif self.score >= 5.0:
+            return "MEDIUM"
+        return "LOW"
+
+    def _classify_age(self) -> str:
+        if self.age < 18:
+            return "Child"
+        elif self.age < 60:
+            return "Adult"
+        return "Senior"
+
+    def summary(self) -> str:
+        return (f"[REPORT] {self.name} | Age Group: {self.age_group} | "
+                f"Risk: {self.risk_level} | High Risk Flag: {self.is_high_risk} | "
+                f"Notes: {self.notes if self.notes else 'None'}")
+
+    def to_tuple(self):
+        base: tuple = super().to_tuple()
+        return base + (self.risk_level, self.age_group, self.notes)
+
+# --------------------------
 # Sorting Strategy (Abstract Base Class)
 # --------------------------
 class SortingStrategy(ABC):
